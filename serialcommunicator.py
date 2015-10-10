@@ -8,6 +8,9 @@ import time
 class CommunicatorListener(object):
 
     def callback(self, data):
+        """
+        :parameter data: Current line read from serial
+        """
         raise NotImplementedError("This method should be overridden by the inherited class")
 
 
@@ -43,14 +46,16 @@ class Communicator(threading.Thread, serial.Serial):
         """
         SET THE INTERVAL WITCH IS USED TO CALL THE CALLBACK FUNCTION WITH DATA FROM SERIAL
         :rtype : float
-        :raise:NotImplementedError if this method is call in this base class
+        :return: Interval current used between readings
+        :raise: NotImplementedError if this method is call in this base class
         """
         raise NotImplementedError("This method should be overridden by the inherited class")
 
     @property
-    def set_interval_read(self):
+    def set_interval_read(self, interval_seconds):
         """
         GET THE INTERVAL WITCH IS USED TO CALL THE CALLBACK FUNCTION WITH DATA FROM SERIAL
+        :parameter interval: Interval in seconds to use between readings
         :raise:NotImplementedError if this method is call in this base class
         """
         raise NotImplementedError("This method should be overridden by the inherited class")
@@ -64,6 +69,14 @@ class DefaultCommunicator(Communicator):
     IMPLEMENTS SOME DEFAULT BEHAVIOUR OF A COMMUNICATOR
     """
     def __init__(self, port, listener, baud_rate=9600, timeout=1, interval_read_seconds=1.0/60.0):
+        """
+        :param port: Port to read data
+        :param listener: Listener to callback when read data from serial. Should implement CommunicatorListener or have
+        callback method
+        :param baud_rate: Baud rate to connect into port
+        :param timeout: Timeout to read data
+        :param interval_read_seconds: Interval between readings
+        """
         threading.Thread.__init__(self)
         serial.Serial.__init__(self)
         self.name = "COMMUNICATOR"
