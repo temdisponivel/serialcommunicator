@@ -1,4 +1,4 @@
-import serial
+import serial #pyserial
 import threading
 import time
 
@@ -42,7 +42,7 @@ class Communicator(threading.Thread, serial.Serial):
         raise NotImplementedError("This method should be overridden by the inherited class")
 
     @property
-    def get_interval_read(self):
+    def interval_read(self):
         """
         SET THE INTERVAL WITCH IS USED TO CALL THE CALLBACK FUNCTION WITH DATA FROM SERIAL
         :rtype : float
@@ -51,8 +51,8 @@ class Communicator(threading.Thread, serial.Serial):
         """
         raise NotImplementedError("This method should be overridden by the inherited class")
 
-    @property
-    def set_interval_read(self, interval_seconds):
+    @interval_read.setter
+    def interval_read(self, interval_seconds):
         """
         GET THE INTERVAL WITCH IS USED TO CALL THE CALLBACK FUNCTION WITH DATA FROM SERIAL
         :parameter interval: Interval in seconds to use between readings
@@ -81,9 +81,9 @@ class DefaultCommunicator(Communicator):
         serial.Serial.__init__(self)
         self.name = "COMMUNICATOR"
         self.daemon = False
-        self.setBaudrate(baud_rate)
-        self.setPort(port)
-        self.setTimeout(timeout)
+        self.baudrate = baud_rate
+        self.port = port
+        self.timeout = timeout
         self.listener = listener
         self.reading = False
         self.interval_read = interval_read_seconds
@@ -101,10 +101,10 @@ class DefaultCommunicator(Communicator):
         self.pause_reading()
         self.stop_evento.set()
 
-    def get_interval_read(self):
+    def interval_read(self):
         return self.interval_read
 
-    def set_interval_read(self, interval_seconds):
+    def interval_read(self, interval_seconds):
         self.interval_read = interval_seconds
 
     def run(self):
@@ -125,25 +125,29 @@ class DefaultListener(CommunicatorListener):
     """
     def __init__(self):
         CommunicatorListener.__init__(self)
-        self.data = list()
+        self._data = list()
 
     def callback(self, data):
         print("Data: {0}".format(data))
         self.data.append(data)
 
     @property
-    def get_data(self):
+    def data(self):
         """
         :rtype : list
         :return: A LIST OF ALL DATA RECEIVE FROM START (OR LAST clear_data() call)
         """
-        return self.data
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
 
     def clear_data(self):
         """
         CLEAR THE LIST DATA OF THIS LISTENER
         """
-        self.data = list()
+        self._data = list()
 
     def __str__(self):
         concat_data = ""
