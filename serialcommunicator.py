@@ -68,7 +68,7 @@ class DefaultCommunicator(Communicator):
     """
     IMPLEMENTS SOME DEFAULT BEHAVIOUR OF A COMMUNICATOR
     """
-    def __init__(self, port, listener, baud_rate=9600, timeout=1, interval_read_seconds=1.0/60.0):
+    def __init__(self, port, listener, baud_rate=9600, timeout=2, interval_read_seconds=0.0003/60.0):
         """
         :param port: Port to read data
         :param listener: Listener to callback when read data from serial. Should implement CommunicatorListener or have
@@ -111,7 +111,10 @@ class DefaultCommunicator(Communicator):
         while not self.stop_event.is_set():
             while self.reading:
                 if self.listener is not None:
-                    self.listener.callback(self.readline())
+                    line = self.readline()
+                    if line == '':
+                        line = 0
+                    self.listener.callback(int(line))
                 time.sleep(self.interval_read)
         self.close()
 
@@ -128,7 +131,7 @@ class DefaultListener(CommunicatorListener):
         self._data = list()
 
     def callback(self, data):
-        print("Data: {0}".format(data))
+        print("Data: {0}".format(data / 58))
         self.data.append(data)
 
     @property
